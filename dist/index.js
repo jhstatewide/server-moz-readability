@@ -63,7 +63,7 @@ const parser = new WebsiteParser();
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [{
-    name: "parse_website",
+    name: "parse",
     description: "Fetches a website's content and converts it to markdown format",
     inputSchema: {
       type: "object",
@@ -82,7 +82,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-  if (name !== "parse_website") {
+  if (name !== "parse") {
     throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
   }
 
