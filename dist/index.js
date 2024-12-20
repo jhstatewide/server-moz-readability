@@ -1,0 +1,126 @@
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { ErrorCode, McpError, ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import axios from 'axios';
+import { Readability } from '@mozilla/readability';
+import { JSDOM } from 'jsdom';
+import TurndownService from 'turndown';
+
+// Initialize HTML to Markdown converter
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced'
+});
+
+class WebsiteParser {
+  async fetchAndParse(url) {
+    try {
+      // Fetch the webpage
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; MCPBot/1.0)'
+        }
+      });
+
+      // Create a DOM from the HTML
+      const dom = new JSDOM(response.data, { url });
+      const document = dom.window.document;
+
+      // Use Readability to extract main content
+      const reader = new Readability(document);
+      const article = reader.parse();
+
+      if (!article) {
+        throw new Error('Failed to parse content');
+      }
+
+      // Convert HTML to Markdown
+      const markdown = turndownService.turndown(article.content);
+
+      return {
+        title: article.title,
+        content: markdown,
+        excerpt: article.excerpt,
+        byline: article.byline,
+        siteName: article.siteName
+      };
+    } catch (error) {
+      throw new Error(`Failed to fetch or parse content: ${error.message}`);
+    }
+  }
+}
+
+// Create MCP server instance
+const server = new Server({
+  name: "website-parser",
+  version: "1.0.0"
+}, {
+  capabilities: { tools: {} }
+});
+
+const parser = new WebsiteParser();
+
+// Define available tools
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [{
+    name: "parse_website",
+    description: "Fetches a website's content and converts it to markdown format",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "The website URL to parse"
+        }
+      },
+      required: ["url"]
+    }
+  }]
+}));
+
+// Handle tool execution
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  if (name !== "parse_website") {
+    throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
+  }
+
+  if (!args?.url) {
+    throw new McpError(ErrorCode.InvalidParams, "URL is required");
+  }
+
+  try {
+    const result = await parser.fetchAndParse(args.url);
+    
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          title: result.title,
+          content: result.content,
+          metadata: {
+            excerpt: result.excerpt,
+            byline: result.byline,
+            siteName: result.siteName
+          }
+        }, null, 2)
+      }]
+    };
+  } catch (error) {
+    return {
+      isError: true,
+      content: [{
+        type: "text",
+        text: `Error: ${error.message}`
+      }]
+    };
+  }
+});
+
+// Start server
+const transport = new StdioServerTransport();
+server.connect(transport).catch(error => {
+  console.error(`Server failed to start: ${error.message}`);
+  process.exit(1);
+});
