@@ -1,10 +1,10 @@
 # Mozilla Readability Parser MCP Server
 
-An [model context protocol (MCP)](https://github.com/modelcontextprotocol) server that extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure. [More about MCP](https://modelcontextprotocol.io/introduction).
+An [model context protocol (MCP)](https://github.com/modelcontextprotocol) server that extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses [Mozilla's Readability algorithm](https://github.com/mozilla/readability) to remove ads, navigation, footers and non-essential elements while preserving the core content structure. [More about MCP](https://modelcontextprotocol.io/introduction).
 
 ## Features
 - Removes ads, navigation, footers and other non-essential content
-- Converts clean HTML into well-formatted Markdown
+- Converts clean HTML into well-formatted Markdown (also uses Turndown)
 - Returns article metadata (title, excerpt, byline, site name)
 - Handles errors gracefully
 
@@ -18,7 +18,7 @@ Unlike simple fetch requests, this server:
 
 ## Installation
 ```bash
-npm install website-parser-mcp
+npm install server-moz-readability
 ```
 
 ## Tool Reference
