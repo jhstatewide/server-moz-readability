@@ -55,9 +55,9 @@ Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "parser": {
+    "readability": {
       "command": "npx",
-      "args": ["-y", "website-parser-mcp"]
+      "args": ["-y", "server-moz-readability"]
     }
   }
 }
