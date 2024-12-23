@@ -1,6 +1,6 @@
-# MCP Website Parser Server
+# Mozilla Readability Parser MCP Server
 
-An MCP server that extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure.
+An [model context protocol (MCP)](https://github.com/modelcontextprotocol) server that extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure. [More about MCP](https://modelcontextprotocol.io/introduction).
 
 ## Features
 - Removes ads, navigation, footers and other non-essential content
