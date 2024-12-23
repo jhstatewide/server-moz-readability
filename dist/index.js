@@ -52,7 +52,7 @@ class WebsiteParser {
 
 // Create MCP server instance
 const server = new Server({
-  name: "website-parser",
+  name: "server-readability-parser",
   version: "1.0.0"
 }, {
   capabilities: { tools: {} }
@@ -64,7 +64,7 @@ const parser = new WebsiteParser();
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [{
     name: "parse",
-    description: "Fetches a website's content and converts it to markdown format",
+    description: "Extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure.",
     inputSchema: {
       type: "object",
       properties: {
