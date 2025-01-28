@@ -19,6 +19,16 @@ Unlike simple fetch requests, this server:
 - Includes useful metadata about the content
 
 ## Installation
+
+### Installing via Smithery
+
+To install Mozilla Readability Parser for Claude Desktop automatically via [Smithery](https://smithery.ai/server/server-moz-readability):
+
+```bash
+npx -y @smithery/cli install server-moz-readability --client claude
+```
+
+### Manual Installation
 ```bash
 npm install server-moz-readability
 ```
