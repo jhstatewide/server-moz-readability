@@ -2,7 +2,11 @@
 
 **This is a fork of the original Mozilla Readability Parser MCP Server, published as `@jharding_npm/server-moz-readability`.**
 
+**Now written in TypeScript.**
+
 An [model context protocol (MCP)](https://github.com/modelcontextprotocol) server that extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses [Mozilla's Readability algorithm](https://github.com/mozilla/readability) to remove ads, navigation, footers and non-essential elements while preserving the core content structure. [More about MCP](https://modelcontextprotocol.io/introduction).
+
+_Current version: **1.0.10**_
 
 <a href="https://glama.ai/mcp/servers/jdcx8fmajm"><img width="380" height="200" src="https://glama.ai/mcp/servers/jdcx8fmajm/badge" alt="Mozilla Readability Parser Server MCP server" /></a>
 
