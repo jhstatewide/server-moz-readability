@@ -37,6 +37,11 @@ interface ArticleResult {
   siteName: string | null;
 }
 
+interface BatchParseInput {
+  urls: string[];
+  maxContentLength?: number;
+}
+
 class WebsiteParser {
   async fetchAndParse(url: string): Promise<ArticleResult> {
     try {
@@ -87,59 +92,126 @@ const parser = new WebsiteParser();
 
 // Define available tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [{
-    name: "parse",
-    description: "Extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        url: {
-          type: "string",
-          description: "The website URL to parse"
-        }
-      },
-      required: ["url"]
+  tools: [
+    {
+      name: "parse",
+      description: "Extracts and transforms webpage content into clean, LLM-optimized Markdown. Returns article title, main content, excerpt, byline and site name. Uses Mozilla's Readability algorithm to remove ads, navigation, footers and non-essential elements while preserving the core content structure.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          url: {
+            type: "string",
+            description: "The website URL to parse"
+          },
+          maxContentLength: {
+            type: "integer",
+            description: "Optional maximum number of characters to return for the content"
+          }
+        },
+        required: ["url"]
+      }
+    },
+    {
+      name: "parse_batch",
+      description: "Fetches and parses multiple URLs, returning segmented results for each. Optionally limits the content length per result.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          urls: {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of website URLs to parse"
+          },
+          maxContentLength: {
+            type: "integer",
+            description: "Optional maximum number of characters to return for each content"
+          }
+        },
+        required: ["urls"]
+      }
     }
-  }]
+  ]
 }));
 
 // Handle tool execution
 server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const { name, arguments: args } = request.params;
 
-  if (name !== "parse") {
+  if (name === "parse") {
+    if (!args?.url) {
+      throw new McpError(ErrorCode.InvalidParams, "URL is required");
+    }
+    const maxLen = typeof args.maxContentLength === 'number' ? args.maxContentLength : undefined;
+    try {
+      const result = await parser.fetchAndParse(args.url);
+      let content = result.content;
+      if (maxLen && typeof content === 'string' && content.length > maxLen) {
+        content = content.slice(0, maxLen) + '\n... [truncated]';
+      }
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            title: result.title,
+            content,
+            metadata: {
+              excerpt: result.excerpt,
+              byline: result.byline,
+              siteName: result.siteName
+            }
+          }, null, 2)
+        }]
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{
+          type: "text",
+          text: `Error: ${error.message}`
+        }]
+      };
+    }
+  } else if (name === "parse_batch") {
+    if (!args?.urls || !Array.isArray(args.urls)) {
+      throw new McpError(ErrorCode.InvalidParams, "urls (array) is required");
+    }
+    const maxLen = typeof args.maxContentLength === 'number' ? args.maxContentLength : undefined;
+    const results = await Promise.all(args.urls.map(async (url: string) => {
+      try {
+        const result = await parser.fetchAndParse(url);
+        let content = result.content;
+        if (maxLen && typeof content === 'string' && content.length > maxLen) {
+          content = content.slice(0, maxLen) + '\n... [truncated]';
+        }
+        return {
+          url,
+          result: {
+            title: result.title,
+            content,
+            metadata: {
+              excerpt: result.excerpt,
+              byline: result.byline,
+              siteName: result.siteName
+            }
+          },
+          isError: false
+        };
+      } catch (error: any) {
+        return {
+          url,
+          error: error.message,
+          isError: true
+        };
+      }
+    }));
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify(results, null, 2)
+      }]
+    };
+  } else {
     throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
-  }
-
-  if (!args?.url) {
-    throw new McpError(ErrorCode.InvalidParams, "URL is required");
-  }
-
-  try {
-    const result = await parser.fetchAndParse(args.url);
-    
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          title: result.title,
-          content: result.content,
-          metadata: {
-            excerpt: result.excerpt,
-            byline: result.byline,
-            siteName: result.siteName
-          }
-        }, null, 2)
-      }]
-    };
-  } catch (error: any) {
-    return {
-      isError: true,
-      content: [{
-        type: "text",
-        text: `Error: ${error.message}`
-      }]
-    };
   }
 });
 
