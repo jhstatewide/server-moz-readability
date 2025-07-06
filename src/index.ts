@@ -12,7 +12,7 @@ import TurndownService from 'turndown';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-let version = 'unknown';
+let version: string = 'unknown';
 try {
   version = require(join(__dirname, '../package.json')).version;
 } catch (e) {
@@ -29,8 +29,16 @@ const turndownService = new TurndownService({
   codeBlockStyle: 'fenced'
 });
 
+interface ArticleResult {
+  title: string;
+  content: string;
+  excerpt: string | null;
+  byline: string | null;
+  siteName: string | null;
+}
+
 class WebsiteParser {
-  async fetchAndParse(url) {
+  async fetchAndParse(url: string): Promise<ArticleResult> {
     try {
       // Fetch the webpage
       const response = await axios.get(url, {
@@ -61,7 +69,7 @@ class WebsiteParser {
         byline: article.byline,
         siteName: article.siteName
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to fetch or parse content: ${error.message}`);
     }
   }
@@ -96,7 +104,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 }));
 
 // Handle tool execution
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const { name, arguments: args } = request.params;
 
   if (name !== "parse") {
@@ -124,7 +132,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }, null, 2)
       }]
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       isError: true,
       content: [{
@@ -140,4 +148,4 @@ const transport = new StdioServerTransport();
 server.connect(transport).catch(error => {
   console.error(`Server failed to start: ${error.message}`);
   process.exit(1);
-});
+}); 
