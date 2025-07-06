@@ -1,6 +1,6 @@
 {
-  "name": "server-moz-readability",
-  "version": "1.0.4",
+  "name": "@jharding_npm/server-moz-readability",
+  "version": "1.0.9",
   "description": "Fetch just the main content and convert it to markdown. Strips away all the junk, which is cleaner for LLMs and reduces your overall context window.",
   "license": "MIT",
   "author": "Joshua Harding",
@@ -19,6 +19,6 @@
     "turndown": "^7.1.2"
   },
   "bin": {
-    "server-moz-readability": "./dist/index.js"
+    "server-moz-readability": "dist/index.js"
   }
 }

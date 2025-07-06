@@ -1,3 +1,7 @@
+#!/usr/bin/env node
+import { createRequire } from 'module';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ErrorCode, McpError, ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
@@ -5,6 +9,19 @@ import axios from 'axios';
 import { Readability } from '@mozilla/readability';
 import { JSDOM } from 'jsdom';
 import TurndownService from 'turndown';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+let version = 'unknown';
+try {
+  version = require(join(__dirname, '../package.json')).version;
+} catch (e) {
+  // fallback: try local package.json (for npx/npm cache situations)
+  try {
+    version = require(join(__dirname, 'package.json')).version;
+  } catch {}
+}
+console.log(`server-moz-readability MCP server v${version} started. Waiting for requests...\n`);
 
 // Initialize HTML to Markdown converter
 const turndownService = new TurndownService({
