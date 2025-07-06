@@ -1,6 +1,6 @@
 {
   "name": "@jharding_npm/server-moz-readability",
-  "version": "1.0.10",
+  "version": "1.0.1",
   "description": "Fetch just the main content and convert it to markdown. Strips away all the junk, which is cleaner for LLMs and reduces your overall context window.",
   "license": "MIT",
   "author": "Joshua Harding",
