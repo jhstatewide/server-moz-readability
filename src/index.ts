@@ -19,9 +19,8 @@ try {
   // fallback: try local package.json (for npx/npm cache situations)
   try {
     version = require(join(__dirname, 'package.json')).version;
-  } catch {}
+   } catch {}
 }
-console.log(`server-moz-readability MCP server v${version} started. Waiting for requests...\n`);
 
 // Initialize HTML to Markdown converter
 const turndownService = new TurndownService({
@@ -78,7 +77,7 @@ class WebsiteParser {
 // Create MCP server instance
 const server = new Server({
   name: "server-readability-parser",
-  version: "1.0.0"
+   version: "1.1.0"
 }, {
   capabilities: { tools: {} }
 });
